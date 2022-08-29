@@ -15,16 +15,23 @@ class Scraper:
         self.driver.get(self.url)
         time.sleep(random.randint(1,3))
         try:
-            self.driver.switch_to.frame('fc-dialog-container') # This is the id of the frame
+            self.driver.switch_to.frame('fc-dialog-container')
             accept_cookies_button = self.driver.find_elementh(by=By.XPATH, value="//button[contains(@class, 'fc-button fc-cta-consent fc-primary-button')]")
             accept_cookies_button.click()
             time.sleep(1)
         except AttributeError:
-            self.driver.switch_to_frame('fc-dialog-container') # This is the id of the frame
+            self.driver.switch_to_frame('fc-dialog-container')
             accept_cookies_button = self.driver.find_elementh(by=By.XPATH, value="//button[contains(@class, 'fc-button fc-cta-consent fc-primary-button')]")
             accept_cookies_button.click()
             time.sleep(1)
         except:
             pass
+        
+    def heroes(self):
+        self.driver.get(self.url + '\heroes')
 
     
+if __name__ == '__main__':
+    scraper = Scraper(url = 'https://www.dotabuff.com/')
+    scraper.connect_cookies()
+    scraper.heroes()
