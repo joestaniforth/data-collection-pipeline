@@ -48,20 +48,26 @@ class Scraper:
         hero_name = url.split('/')[-1]
         #hero_list.append(hero_name)
         #hero_list.append(win_rate)
-        item_table =self.driver.find_element(by = By.XPATH, value = self.item_table_xpath)
-        item_rows = 1 + len(self.driver.find_elements_by_xpath(self.item_table_xpath + '/tbody/tr'))
-        item_cols = len(self.driver.find_elements_by_xpath(self.item_table_xpath + '/tbody/tr[1]/td'))
-        print(hero_name, win_rate, item_rows, item_cols)
-        for r in range(1, 12):
-            for c in range(2, 6):
-                value = self.driver.find_element_by_xpath(self.item_table_xpath + f'/tbody/tr[{str(r)}]/td[{str(c)}]').text
-                print(value)
-        pass
-
-
-
-
-    
+        #item_table = self.driver.find_element(by = By.XPATH, value = self.item_table_xpath)
+        item_rows = self.driver.find_elements_by_xpath(self.item_table_xpath + '/tbody/tr')
+        values = list()
+        for row in item_rows:
+            values.append({
+               'Item Name': row.find_elements(by = By.TAG_NAME, value='td')[1].text,
+               'Matches Played': row.find_elements(by = By.TAG_NAME, value='td')[2].text,
+               'Matches Won': row.find_elements(by = By.TAG_NAME, value='td')[3].text,
+               'Win Rate': row.find_elements(by = By.TAG_NAME, value='td')[4].text
+            })
+        print(hero_name)
+        print(values)
+        #item_cols = len(self.driver.find_elements_by_xpath(self.item_table_xpath + '/tbody/tr[1]/td'))
+        #print(hero_name, win_rate, item_rows, item_cols)
+        #for r in range(1, 12):
+        #    for c in range(2, 6):
+        #        value = self.driver.find_element_by_xpath(self.item_table_xpath + f'/tbody/tr[{str(r)}]/td[{str(c)}]').text
+        #        print(value)
+        #pass
+  
 if __name__ == '__main__':
     scraper = Scraper(url = 'https://www.dotabuff.com/')
     scraper.connect_cookies()
