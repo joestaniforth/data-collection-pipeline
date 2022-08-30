@@ -17,7 +17,7 @@ class Scraper:
 
     def connect_cookies(self,):
         self.driver.get(self.url)
-        time.sleep(random.randint(1,3))
+        time.sleep(1)
         try:
             self.driver.switch_to.frame('fc-dialog-container')
             accept_cookies_button = self.driver.find_element(by=By.XPATH, value="//button[contains(@class, 'fc-button fc-cta-consent fc-primary-button')]")
@@ -55,7 +55,6 @@ class Scraper:
         item_rows = self.driver.find_elements_by_xpath(self.item_table_xpath + '/tbody/tr')
         print(len(item_rows))
         values = list()
-        
         for i in range(1, 13):
             values.append({
                'Item Name': self.driver.find_element(by = By.XPATH, value = self.item_table_xpath + f'/tbody/tr[{i}]' + '/td[2]').text,
