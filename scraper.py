@@ -18,15 +18,12 @@ class dotaScraper:
         self.connect_cookies()
         self.get_heroes()
 
-
-
     def connect_cookies(self):
         self.driver.get(self.url)
         time.sleep(2)
         accept_cookies_button = self.driver.find_element(by=By.XPATH, value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
         accept_cookies_button.click()
         time.sleep(1)
-        
 
     def get_heroes(self):
         self.driver.get(self.url + '\heroes')
