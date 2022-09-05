@@ -1,11 +1,12 @@
+from json import dumps, load
+from os import mkdir
+from os.path import join, isdir
+from requests import get
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-import time
-import uuid
-import os
-import json
-import requests
+from time import sleep
+from uuid import uuid4
 
 class dotaScraper:
     def __init__(self, url):
@@ -20,17 +21,17 @@ class dotaScraper:
         self.connect_cookies()
         self.get_heroes()
         self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
-        if os.path.isdir('raw_data'):
+        if isdir('raw_data'):
             pass
         else:
-            os.mkdir('raw_data')
+            mkdir('raw_data')
         
     def connect_cookies(self):
         self.driver.get(self.url)
-        time.sleep(2)
+        sleep(2)
         accept_cookies_button = self.driver.find_element(by=By.XPATH, value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
         accept_cookies_button.click()
-        time.sleep(1)
+        sleep(1)
 
     def get_heroes(self):
         self.driver.get(self.url + '\heroes')
@@ -64,18 +65,18 @@ class dotaScraper:
             'Portrait': hero_portrait,
             'Items': item_dict,
             'ID': hero_name.upper(),
-            'UUID': str(uuid.uuid4())
+            'UUID': str(uuid4())
         }
         try:
-            os.mkdir(os.path.join(f'raw_data\\{hero_name}'))
+            mkdir(join(f'raw_data\\{hero_name}'))
         except FileExistsError:
             pass
-        hero_json = json.dumps(hero_dict)
+        hero_json = dumps(hero_dict)
         with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
             file.write(hero_json) 
         
     def scrape_hero_image(self, hero_name, url):
-        page = requests.get(url, headers = self.headers)
+        page = get(url, headers = self.headers)
         file_name = url.split('/')[-1]
         with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as f:
             f.write(page.content)
@@ -88,7 +89,7 @@ class dotaScraper:
         for hero in self.hero_urls:
             hero_name = hero.split('/')[-1]
             with open(f'raw_data\\{hero_name}\\data.json', 'r') as file:
-                hero_values = json.load(file)
+                hero_values = load(file)
             image_url = hero_values['Portrait']
             self.scrape_hero_image(hero_name = hero_name, url = image_url)
 
