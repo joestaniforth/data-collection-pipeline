@@ -67,10 +67,10 @@ class dotaScraper:
             'ID': hero_name.upper(),
             'UUID': str(uuid4())
         }
-        try:
-            mkdir(join(f'raw_data\\{hero_name}'))
-        except FileExistsError:
+        if isdir(join(f'raw_data\\{hero_name}')):
             pass
+        else:
+            mkdir(join(f'raw_data\\{hero_name}'))
         hero_json = dumps(hero_dict)
         with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
             file.write(hero_json) 
