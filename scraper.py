@@ -9,7 +9,7 @@ from time import sleep
 from uuid import uuid4
 
 class dotaScraper:
-    def __init__(self, url):
+    def __init__(self, url) -> None:
         self.url = url      
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
@@ -26,20 +26,28 @@ class dotaScraper:
         else:
             mkdir('raw_data')
         
-    def connect_cookies(self):
+    def connect_cookies(self) -> None:
+        '''Connects to Dotabuff and accepts cookies'''
         self.driver.get(self.url)
         sleep(2)
         accept_cookies_button = self.driver.find_element(by=By.XPATH, value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
         accept_cookies_button.click()
         sleep(1)
 
-    def get_heroes(self):
+    def get_heroes(self) -> None:
+        '''Gets the list of heroes from www.dotabuff.com\heroes, and saves the urls to these pages in self.get_heroes'''
         self.driver.get(self.url + '\heroes')
         heroes = self.driver.find_elements(by = By.XPATH, value = '//a[descendant::*[@class = "hero"]]')
         for hero in heroes:
             self.hero_urls.append(hero.get_attribute('href'))
         
-    def scrape_hero_data(self, url):
+    def scrape_hero_data(self, url) -> None:
+        '''Scrapes the data for one hero and saves the result to /raw_data/hero_name/data.json
+        
+        Parameters
+        ----------
+        url: url to a hero on dotabuff in the format www.dotabuff.com/heroes/<hero_name>
+        '''
         self.driver.get(url)
         try:
             win_rate_span = self.driver.find_element(by = By.XPATH, value = '//dd[descendant::*[@class = "won"]]/span')
@@ -75,17 +83,24 @@ class dotaScraper:
         with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
             file.write(hero_json) 
         
-    def scrape_hero_image(self, hero_name, url):
+    def scrape_hero_image(self, hero_name, url) -> None:
+        '''Scrapes the hero portrait of a hero
+        
+        Parameters
+        ----------
+        hero_name: name of the hero to scrape
+        '''
         page = get(url, headers = self.headers)
         file_name = url.split('/')[-1]
         with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as f:
             f.write(page.content)
 
-    def scrape_all_heroes(self):
+    def scrape_all_heroes(self) -> None:
+        '''Scrapes all heroes'''
         for hero in self.hero_urls:
             self.scrape_hero_data(hero)
 
-    def scrape_all_hero_images(self):
+    def scrape_all_hero_images(self) -> None:
         for hero in self.hero_urls:
             hero_name = hero.split('/')[-1]
             with open(f'raw_data\\{hero_name}\\data.json', 'r') as file:
