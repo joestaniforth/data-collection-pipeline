@@ -1,4 +1,4 @@
-#Dotabuff Scraper
+# Dotabuff Scraper
 
 ## Milestone 3: Prototype finding the individual page for each entry
 
