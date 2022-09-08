@@ -91,7 +91,7 @@ def scrape_hero_image(self, hero_name) -> None:
             file.write(page.content)
 ```
 
-Sending this request with the user-agent header was necessary, otherwise the server would send a HTTP error 429, regardless of the frequency of the requests sent.
+Sending this request with the user-agent header was necessary, otherwise the server would send a HTTP error 429, regardless of the frequency of the requests sent. This occured in development if headers were not sent.
 
 ## Milestone 5: Documentation and Testing
 
