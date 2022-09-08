@@ -23,7 +23,9 @@ This method is called in the initialiser and is the result is saved to a list, w
 
 ## Milestone 4: Retrieving data from details page
 
-Scraping the data relied on writing XPATH queries for the various fields. This required the use of the descendant query to select elements containing specific terms, then selecting other tags that contained necessary data. For tabular data, this was especially necessary. This data, including a URL to the relevant hero portrait, was dumped to a json file.
+Scraping the data relied on writing XPATH queries for the various fields. This required the use of the descendant query to select elements containing specific terms, then selecting other tags that contained necessary data. For tabular data, this was especially necessary. This data, including a URL to the relevant hero portrait, was dumped to a json file. Given that there are some minor variations between hero pages, the queries had to be more robust than a path provided by chrome devtools. UUIDs and an ID were assigned to each entry, to catalogue them.
+
+Scraping tabular data was initially done using nestled for loops, however, this is not performant so this was flattened to one for loop, which looked up the values for the necessary columns in one iteration.
 
 ```python
 def scrape_hero_data(self, url) -> None:
@@ -68,4 +70,12 @@ def scrape_hero_data(self, url) -> None:
         with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
             file.write(hero_json)
 ```
+
+## Milestone 5: Documentation and Testing
+
+Unit testing was initially a challenge; none of the functions have any return values. Unit testing was therefore split into two broad types of test:
+- Mock testing to determine whether a function was called or checking it was called the appropriate number of times
+- Testing output files (data.json and jpgs of hero portraits) to determine they are in the correct format and not blank
+
+.json files were loaded and iterated over to ensure no fields were blank. The filetype library was used to check whether the 
 
