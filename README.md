@@ -4,10 +4,22 @@
 
 Dotabuff provides structured pages for each hero which this scraper scrapes. The fields scraped are the hero name, portrait, win rate, and item data. This data changes on a weekly basis, and therefore, repeat scraping will have seperate data for win rate and items, allowing trends to be drawn from this data.
 
-Dotabuff has a page with a list of heroes, so using the XPATH query
-```XPATH
+Dotabuff has a page with a list of heroes, so using the XPATH query:
+```xpath
 //a[descendant::*[@class = "hero"]]
 ```
+The hero links can be grabbed by getting the href attribute from the elements returned by the above query. Putting this together, a method can be written to grab all these links, as below:
+
+```python
+def get_heroes(self) -> None:
+        '''Gets the list of heroes from www.dotabuff.com\heroes, and saves the urls to these pages in self.get_heroes'''
+        self.driver.get(self.url + '\heroes')
+        heroes = self.driver.find_elements(by = By.XPATH, value = '//a[descendant::*[@class = "hero"]]')
+        for hero in heroes:
+            self.hero_urls.append(hero.get_attribute('href'))
+```
+
+This method is called in the initialiser and is the result is saved to a list, which is also initialised in the initialiser.
 
 ## Milestone 4: Retrieving data from details page
 
