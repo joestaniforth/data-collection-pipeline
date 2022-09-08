@@ -71,11 +71,35 @@ def scrape_hero_data(self, url) -> None:
             file.write(hero_json)
 ```
 
+Scraping images was done with the requests library, see below:
+```python
+self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
+
+def scrape_hero_image(self, hero_name) -> None:
+        '''Scrapes the hero portrait of a hero
+        
+        Parameters
+        ----------
+        hero_name: name of the hero to scrape
+        '''
+        with open(f'raw_data\\{hero_name}\\data.json', 'r') as file:
+            hero_values = load(file)
+        image_url = hero_values['Portrait']
+        page = get(image_url, headers = self.headers)
+        file_name = image_url.split('/')[-1]
+        with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as file:
+            file.write(page.content)
+```
+
+Sending this request with the user-agent header was necessary, otherwise the server would send a HTTP error 429, regardless of the frequency of the requests sent.
+
 ## Milestone 5: Documentation and Testing
 
 Unit testing was initially a challenge; none of the functions have any return values. Unit testing was therefore split into two broad types of test:
 - Mock testing to determine whether a function was called or checking it was called the appropriate number of times
 - Testing output files (data.json and jpgs of hero portraits) to determine they are in the correct format and not blank
 
-.json files were loaded and iterated over to ensure no fields were blank. The filetype library was used to check whether the 
+.json files were loaded and iterated over to ensure no fields were blank. The filetype library was used to check whether the image was saved correctly as a jpg; as the method used to retrieve it could also retrieve HTTP errors and save the corresponding html document with a .jpg extension.
+
+Patching the methods to be mock tested then allowed the number of calls to be tracked.
 
