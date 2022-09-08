@@ -14,7 +14,7 @@ class dotaScraper:
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--log-level=3")
-        self.driver = webdriver.Chrome(executable_path = r'D:\chromedriver.exe', options=self.chrome_options)
+        self.driver = webdriver.Chrome(options=self.chrome_options)#executable_path = r'D:\chromedriver.exe')
         self.driver.implicitly_wait(10)
         self.hero_urls = list()
         self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
@@ -83,17 +83,20 @@ class dotaScraper:
         with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
             file.write(hero_json) 
         
-    def scrape_hero_image(self, hero_name, url) -> None:
+    def scrape_hero_image(self, hero_name) -> None:
         '''Scrapes the hero portrait of a hero
         
         Parameters
         ----------
         hero_name: name of the hero to scrape
         '''
-        page = get(url, headers = self.headers)
-        file_name = url.split('/')[-1]
-        with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as f:
-            f.write(page.content)
+        with open(f'raw_data\\{hero_name}\\data.json', 'r') as file:
+            hero_values = load(file)
+        image_url = hero_values['Portrait']
+        page = get(image_url, headers = self.headers)
+        file_name = image_url.split('/')[-1]
+        with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as file:
+            file.write(page.content)
 
     def scrape_all_heroes(self) -> None:
         '''Scrapes all heroes'''
@@ -103,10 +106,7 @@ class dotaScraper:
     def scrape_all_hero_images(self) -> None:
         for hero in self.hero_urls:
             hero_name = hero.split('/')[-1]
-            with open(f'raw_data\\{hero_name}\\data.json', 'r') as file:
-                hero_values = load(file)
-            image_url = hero_values['Portrait']
-            self.scrape_hero_image(hero_name = hero_name, url = image_url)
+            self.scrape_hero_image(hero_name = hero_name)
 
 if __name__ == '__main__':
     scraper = dotaScraper(url = 'https://www.dotabuff.com/')
