@@ -1,3 +1,4 @@
+from datetime import datetime
 from json import dumps, load
 from os import mkdir
 from os.path import join, isdir
@@ -7,6 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 from uuid import uuid4
+import boto3
+import io
 
 class dotaScraper:
     def __init__(self, url) -> None:
@@ -14,17 +17,19 @@ class dotaScraper:
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--log-level=3")
-        self.driver = webdriver.Chrome(options=self.chrome_options)#executable_path = r'D:\chromedriver.exe')
-        self.driver.implicitly_wait(10)
-        self.hero_urls = list()
-        self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
-        self.connect_cookies()
-        self.get_heroes()
+        self.driver = webdriver.Chrome(options=self.chrome_options, executable_path = r'D:\chromedriver.exe')
+        #self.driver.implicitly_wait(10)
         self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
-        if isdir('raw_data'):
-            pass
-        else:
+        self.hero_urls = list()
+        self.hero_portrait_urls = list()
+        self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
+        self.s3_client = boto3.client('s3')
+        self.connect_cookies()
+        self.get_heroes()  
+        if not isdir('raw_data'):
             mkdir('raw_data')
+        if not isdir('aws_stash'):
+            mkdir('aws_stash')
         
     def connect_cookies(self) -> None:
         '''Connects to Dotabuff and accepts cookies'''
@@ -58,6 +63,7 @@ class dotaScraper:
         win_rate = win_rate_span.text
         hero_name = url.split('/')[-1]
         item_dict = dict()
+        date_scraped = datetime.today().strftime("%Y-%m-%d")
         for i in range(1, 13):
             item_name = self.driver.find_element(by = By.XPATH, value = self.item_table_xpath + f'/tbody/tr[{i}]' + '/td[2]').text
             item_dict.update({
@@ -72,16 +78,12 @@ class dotaScraper:
             'Win Rate':win_rate,
             'Portrait': hero_portrait,
             'Items': item_dict,
-            'ID': hero_name.upper(),
-            'UUID': str(uuid4())
+            'ID': f'{hero_name.upper()}' + '-' + f'{date_scraped}',
+            'UUID': str(uuid4()),
+            'Date Scraped': f'{date_scraped}'
         }
-        if isdir(join(f'raw_data\\{hero_name}')):
-            pass
-        else:
-            mkdir(join(f'raw_data\\{hero_name}'))
-        hero_json = dumps(hero_dict)
-        with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
-            file.write(hero_json) 
+        self.hero_portrait_urls.append(hero_dict['Portrait'])
+        return hero_name, hero_dict, date_scraped 
         
     def scrape_hero_image(self, hero_name) -> None:
         '''Scrapes the hero portrait of a hero
@@ -101,14 +103,47 @@ class dotaScraper:
     def scrape_all_heroes(self) -> None:
         '''Scrapes all heroes'''
         for hero in self.hero_urls:
-            self.scrape_hero_data(hero)
+            data = self.scrape_hero_data(hero)
+            self.stash_data_local(hero_name = data[0], hero_dict = data[1])
+
+    def scrape_all_heroes_to_s3(self) -> None:
+        '''Scrapes all heroes'''
+        for hero in self.hero_urls:
+            data = self.scrape_hero_data(hero)
+            self.stash_data_s3(data =  data)
 
     def scrape_all_hero_images(self) -> None:
         for hero in self.hero_urls:
             hero_name = hero.split('/')[-1]
             self.scrape_hero_image(hero_name = hero_name)
 
+    def stash_data_local(self, hero_name, hero_dict) -> None:
+        if isdir(join(f'raw_data\\{hero_name}')):
+            pass
+        else:
+            mkdir(join(f'raw_data\\{hero_name}'))
+        hero_json = dumps(hero_dict)
+        with open(f'raw_data\\{hero_name}\\data.json', 'w') as file:
+            file.write(hero_json) 
+
+    def stash_data_s3(self, data) -> None:
+        file_obj = io.BytesIO(dumps(data[1]).encode('utf-8'))
+        self.s3_client.upload_fileobj(file_obj, 'jsscraperbucket', f'{data[0]}\\{data[0]}-{data[2]}_raw_data.json')
+
+
+    def stash_image_s3(self, image_url) -> None:
+        file_name = image_url.split('/')[-1]
+        page = get(image_url, headers = self.headers)
+        file_obj = io.BytesIO(page.content)
+        self.s3_client.upload_fileobj(file_obj, 'jsscraperbucket', f'{file_name}')
+        
+    def scrape_images_to_s3(self):
+        for url in self.hero_portrait_urls:
+            self.stash_image_s3(image_url = url)
+
 if __name__ == '__main__':
     scraper = dotaScraper(url = 'https://www.dotabuff.com/')
-    scraper.scrape_all_heroes()
-    scraper.scrape_all_hero_images()
+    scraper.stash_image_s3(image_url = 'https://www.dotabuff.com/assets/heroes/abaddon-01d9b9a7f55f569c4a81e7d5362a593a871673f91a08671ade83a0139071b47e.jpg')
+    #scraper.scrape_all_heroes_to_s3()
+    #scraper.scrape_all_heroes()
+    #scraper.scrape_all_hero_images()
