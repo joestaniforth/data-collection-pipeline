@@ -13,7 +13,7 @@ import boto3
 import io
 
 class dotaScraper:
-    def __init__(self, url) -> None:
+    def __init__(self, url, id_list) -> None:
         self.url = url      
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
@@ -25,7 +25,8 @@ class dotaScraper:
         self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
         self.s3_client = boto3.client('s3')
         self.connect_cookies()
-        self.get_heroes()  
+        self.get_heroes()
+        self.id_list = id_list
         if not isdir('raw_data'):
             mkdir('raw_data')
         
@@ -97,12 +98,13 @@ class dotaScraper:
         with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as file:
             file.write(page.content)
 
-    def scrape_all_heroes(self) -> None:
+    def scrape_all_heroes(self, id_list: list) -> None:
         '''Scrapes all heroes'''
         for url in self.hero_urls:
             hero_name = url.split('/')[-1]
             id_string = self.generate_id(hero_name)
-            data = self.scrape_hero_data(hero_name = hero_name, url = url, id = id_string)
+            if id_string not in id_list:
+                data = self.scrape_hero_data(hero_name = hero_name, url = url, id = id_string)
             self.stash_data_local(data = data)
         pass
 
@@ -157,6 +159,7 @@ class dotaScraper:
         return id_string
 
 if __name__ == '__main__':
-    scraper = dotaScraper(url = 'https://www.dotabuff.com/')
+    id_list = list()
+    scraper = dotaScraper(url = 'https://www.dotabuff.com/', id_list = id_list)
     scraper.scrape_all_heroes()
     scraper.scrape_all_hero_images()
