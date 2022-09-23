@@ -98,12 +98,12 @@ class dotaScraper:
         with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as file:
             file.write(page.content)
 
-    def scrape_all_heroes(self, id_list: list) -> None:
+    def scrape_all_heroes(self, scrape_flag) -> None:
         '''Scrapes all heroes'''
         for url in self.hero_urls:
             hero_name = url.split('/')[-1]
             id_string = self.generate_id(hero_name)
-            if id_string not in id_list:
+            if scrape_flag == 0:
                 data = self.scrape_hero_data(hero_name = hero_name, url = url, id = id_string)
             self.stash_data_local(data = data)
         pass

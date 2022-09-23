@@ -6,7 +6,7 @@ class PostgreSQL_Fetcher:
         with open(credentials_json, 'r') as credentials:
             self.credentials_dict = json.load(credentials)
     
-    def fetch_id(self) -> list:
+    def fetch_id(self, target_id) -> list:
         with psycopg2.connect(
             host = self.credentials_dict['host'], 
             user = self.credentials_dict['user'], 
@@ -14,11 +14,12 @@ class PostgreSQL_Fetcher:
             port = self.credentials_dict['port'], 
             database = 'postgres') as connection:
             with connection.cursor() as cursor:
-                cursor.execute('''
-                    SELECT scraper_id FROM all_hero_data
+                cursor.execute(f'''
+                    SELECT COUNT(*) FROM all_hero_data
+                    WHERE scraper_id = {target_id}
                 ''')
-                id_list = cursor.fetchall()
-        return id_list
+                presence = cursor.fetchall()
+        return presence
     
 if __name__ == '__main__':
     fetcher = PostgreSQL_Fetcher(credentials_json = 'credentials.json')
