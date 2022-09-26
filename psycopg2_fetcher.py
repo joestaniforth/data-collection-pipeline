@@ -18,7 +18,7 @@ class PostgreSQL_Fetcher:
                     SELECT COUNT(*) FROM all_hero_data
                     WHERE scraper_id = '{target_id}'
                 ''')
-                presence = cursor.fetchall()
+                presence = cursor.fetchall()[0][0]
         return presence
     
 if __name__ == '__main__':

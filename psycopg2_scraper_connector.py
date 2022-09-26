@@ -2,7 +2,7 @@ import psycopg2
 from scraper import dotaScraper
 import os
 import json
-import shutil
+from datetime import datetime
 
 class PostgreSQL_Connector:
     def __init__(self, credentials_json: json, hero_list: list):
@@ -178,10 +178,9 @@ class PostgreSQL_Connector:
     def push_data_from_local(self):
         for folder in os.listdir('raw_data'):
             for file in os.listdir(f'raw_data\\{folder}'):
-                if file.endswith('.json'):
+                if file.endswith(f'{datetime.today().strftime("%Y-%m-%d")}.json'):
                     self.push_data(hero_json = f'raw_data\\{folder}\\{file}')
-        if os.path.isdir('archive'):
-            shutil.move('raw_data', 'archive')
+
 
 
 

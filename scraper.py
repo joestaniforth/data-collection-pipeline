@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, date
-from json import dumps, load
+from json import dumps
 from os import mkdir
 from os.path import join, isdir
 from requests import get
@@ -13,7 +13,7 @@ import boto3
 import io
 
 class dotaScraper:
-    def __init__(self, url, id_list) -> None:
+    def __init__(self, url) -> None:
         self.url = url      
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
@@ -26,7 +26,6 @@ class dotaScraper:
         self.s3_client = boto3.client('s3')
         self.connect_cookies()
         self.get_heroes()
-        self.id_list = id_list
         if not isdir('raw_data'):
             mkdir('raw_data')
         
@@ -160,6 +159,6 @@ class dotaScraper:
 
 if __name__ == '__main__':
     id_list = list()
-    scraper = dotaScraper(url = 'https://www.dotabuff.com/', id_list = id_list)
+    scraper = dotaScraper(url = 'https://www.dotabuff.com/')
     scraper.scrape_all_heroes()
     scraper.scrape_all_hero_images()
