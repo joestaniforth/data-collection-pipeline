@@ -40,11 +40,25 @@ class dotaScraper:
         '''Connects to Dotabuff and accepts cookies'''
         self.driver.get(self.url)
         sleep(2)
-        accept_cookies_button = self.driver.find_element(
+        try:
+            accept_cookies_button = self.driver.find_element(
             by=By.XPATH,
             value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
-        accept_cookies_button.click()
+            accept_cookies_button.click()
+        except:
+            self.click_button()
         sleep(1)
+
+    def click_button(self):
+        try:
+            accept_cookies_button = self.driver.find_element(
+            by=By.XPATH,
+            value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
+            accept_cookies_button.click()
+            return
+        except:
+            self.click_button()
+        
 
     def get_heroes(self) -> None:
         '''Gets the list of heroes from www.dotabuff.com\heroes, and saves the urls to these pages in self.get_heroes'''
