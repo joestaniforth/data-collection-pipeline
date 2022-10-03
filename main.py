@@ -1,8 +1,9 @@
+from os import rmdir
 from scraper import dotaScraper
 from psycopg2_scraper_connector import PostgreSQL_Connector
 from psycopg2_fetcher import PostgreSQL_Fetcher
 
-credentials = 'credentials.json'
+credentials = '/run/secrets/credentials'
 
 scraper = dotaScraper(url = 'https://www.dotabuff.com/')
 connector = PostgreSQL_Connector(credentials_json = credentials, hero_list = scraper.hero_urls)
@@ -19,3 +20,4 @@ def local_scrape():
 
 if __name__ == '__main__':
     local_scrape()
+    rmdir('raw_data')

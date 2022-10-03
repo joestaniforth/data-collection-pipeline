@@ -29,8 +29,8 @@ class PostgreSQL_Connector:
         '''
         with psycopg2.connect(
             host = self.credentials_dict['host'], 
-            user = self.credentials_dict['user'], 
-            password = self.credentials_dict['password'], 
+            user = self.credentials_dict['read_write_user'], 
+            password = self.credentials_dict['read_write_password'], 
             port = self.credentials_dict['port'], 
             database = 'postgres') as connection:
             with connection.cursor() as cursor:
@@ -50,8 +50,8 @@ class PostgreSQL_Connector:
     def create_hero_table(self):
         with psycopg2.connect(
             host = self.credentials_dict['host'], 
-            user = self.credentials_dict['user'], 
-            password = self.credentials_dict['password'], 
+            user = self.credentials_dict['read_write_user'], 
+            password = self.credentials_dict['read_write_password'], 
             port = self.credentials_dict['port'],
             database = 'postgres') as connection:
             with connection.cursor() as cursor:
@@ -138,8 +138,8 @@ class PostgreSQL_Connector:
         query_dict = self.flatten_json(target_json = hero_json)
         with psycopg2.connect(
             host = self.credentials_dict['host'], 
-            user = self.credentials_dict['user'], 
-            password = self.credentials_dict['password'], 
+            user = self.credentials_dict['read_write_user'], 
+            password = self.credentials_dict['read_write_password'], 
             port = self.credentials_dict['port'],
             database = 'postgres') as connection:
             with connection.cursor() as cursor:

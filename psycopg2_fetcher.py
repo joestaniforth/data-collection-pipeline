@@ -9,8 +9,8 @@ class PostgreSQL_Fetcher:
     def fetch_id(self, target_id) -> int:
         with psycopg2.connect(
             host = self.credentials_dict['host'], 
-            user = self.credentials_dict['user'], 
-            password = self.credentials_dict['password'], 
+            user = self.credentials_dict['read_only_user'], 
+            password = self.credentials_dict['read_only_password'], 
             port = self.credentials_dict['port'], 
             database = 'postgres') as connection:
             with connection.cursor() as cursor:
@@ -26,9 +26,3 @@ if __name__ == '__main__':
     res = fetcher.fetch_id('ABADDON-2022-19-19')
     num_results = res[0][0]
     print(num_results)
-    #if res[0] == (0,):
-    #    print('scrape')
-    #elif res[0] == (1,):
-    #    print('no scrape')
-    
-        

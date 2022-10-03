@@ -18,8 +18,15 @@ class dotaScraper:
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--log-level=3")
-        self.driver = webdriver.Chrome(options=self.chrome_options, executable_path = r'D:\chromedriver.exe')
+        self.chrome_options.add_argument('--no-sandbox')
+        self.chrome_options.add_argument('--disable-gpu')
+        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        self.chrome_prefs = {}
+        self.chrome_options.experimental_options["prefs"] = self.chrome_prefs
+        self.chrome_prefs["profile.default_content_settings"] = {"images": 2}
+        self.driver = webdriver.Chrome(options=self.chrome_options) #, executable_path = r'D:\chromedriver.exe')
         self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
+        self.driver.implicitly_wait(10)
         self.hero_urls = list()
         self.hero_portrait_urls = dict()
         self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
@@ -97,15 +104,13 @@ class dotaScraper:
         with open(f'raw_data\\{hero_name}\\{file_name}', 'wb') as file:
             file.write(page.content)
 
-    def scrape_all_heroes(self, scrape_flag) -> None:
-        '''Scrapes all heroes'''
+    def scrape_all_heroes(self):
         for url in self.hero_urls:
             hero_name = url.split('/')[-1]
             id_string = self.generate_id(hero_name)
-            if scrape_flag == 0:
-                data = self.scrape_hero_data(hero_name = hero_name, url = url, id = id_string)
+            data = self.scrape_hero_data(hero_name = hero_name, url = url, id = id_string)
             self.stash_data_local(data = data)
-        pass
+
 
     def scrape_all_heroes_to_s3(self) -> None:
         '''Scrapes all heroes'''
