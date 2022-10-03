@@ -1,0 +1,4 @@
+*.json
+test.py
+test_main.py
+*.pem

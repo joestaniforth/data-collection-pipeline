@@ -1,0 +1,10 @@
+version: '2.2'
+
+services:
+  scraper:
+    image: scraper:latest
+    secrets:
+      - credentials
+secrets:
+  credentials:
+    file: credentials.json
