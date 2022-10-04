@@ -175,7 +175,6 @@ class dotaScraper:
         return id_string
 
 if __name__ == '__main__':
-    id_list = list()
     scraper = dotaScraper(url = 'https://www.dotabuff.com/')
     scraper.scrape_all_heroes()
     scraper.scrape_all_hero_images()

@@ -118,9 +118,38 @@ However, the storage taken up by the raw data was minimal, and as such, local st
 
 ## Milestone 7: Preventing Re-Scraping and Getting more data
 
-As essentially the same data is eing scraped each time the scraper runs, preventing re-scraping was more difficult than simply assigning and ID and looking this ID up. Eventually, it was decided that an ID of the hero name and the date of the week beginning would be concatenated to create an ID. A postgres query, shown below is run through psycopg2 to determine if a record exists, and in main.py, this is evaluated and if no record is found, the hero is scraped.
+As essentially the same data is being scraped each time the scraper runs, preventing re-scraping was more difficult than simply assigning and ID and looking this ID up. Eventually, it was decided that an ID of the hero name and the date of the week beginning would be concatenated to create an ID. A postgres query, shown below is run through psycopg2 to determine if a record exists, and in main.py, this is evaluated and if no record is found, the hero is scraped.
 ```SQL
 SELECT COUNT(*) FROM all_hero_data
 WHERE scraper_id = <target_id>
 ```
 This returns a count, which means it will scale better as the database grows in size.
+
+## Milestone 8: Containerising the scraper and running it on a Cloud Server
+
+The scraper was containerised with the following dockerfile:
+```dockerfile
+COPY . .
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+RUN apt-get -y update
+RUN apt-get install -y google-chrome-stable
+
+RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+RUN apt-get install -yqq unzip
+RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+
+
+ENV DISPLAY=:99
+
+RUN pip install -r requirements.txt
+CMD ["python", "main.py"]
+```
+
+The dockerfile installs chrome and chromedriver. This was tested locally and ran fine, with some minor alterations to allow the scraper to run on linux. These changes were significant enough to merit a branch (docker) to be created. For convienience, a docker-compose.yml file was written to streamline deployment. The use of docker compose had the added benefit of the secret section providing a secure way to store database credentials withut having to supply them as environemnt variables, which is insecure as they can be accessed from the running container through docker exec. 
+
+An EC2 Instance running amazon linux 2 as the AMI was created, and docker was installed on it. Cronjobs were created to allow the scraper to run every week:
+```shell
+0 12 * * 1 (cd /home/ec2-user; docker-compose up && docker-compose down) >/home/ec2-user/container.log 2>&1
+```
