@@ -4,6 +4,7 @@ from os import mkdir
 from os.path import join, isdir
 from requests import get
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
@@ -15,50 +16,47 @@ import io
 class dotaScraper:
     def __init__(self, url) -> None:
         self.url = url      
-        self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
-        self.chrome_options.add_argument("--log-level=3")
-        self.chrome_options.add_argument('--no-sandbox')
-        self.chrome_options.add_argument('--disable-gpu')
-        self.chrome_options.add_argument('--disable-dev-shm-usage')
-        self.chrome_prefs = {}
-        self.chrome_options.experimental_options["prefs"] = self.chrome_prefs
-        self.chrome_prefs["profile.default_content_settings"] = {"images": 2}
-        self.driver = webdriver.Chrome(options=self.chrome_options) #, executable_path = r'D:\chromedriver.exe')
+        self.configure_chrome()
+        self.driver = webdriver.Chrome(options=self.chrome_options)
         self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'}
         self.driver.implicitly_wait(10)
         self.hero_urls = list()
         self.hero_portrait_urls = dict()
         self.item_table_xpath = '//table[descendant::thead[descendant::tr[descendant::th[contains(text(), "Item")]]]]'
         self.s3_client = boto3.client('s3')
-        self.connect_cookies()
         self.get_heroes()
         if not isdir('raw_data'):
             mkdir('raw_data')
-        
+
+    def configure_chrome(self):
+        self.chrome_options = Options()
+        options_list = [
+            '--headless', 
+            '--log-level=3',
+            '--no-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--window-size=1920x1080',
+            '--allow-running-insecure-content',
+            '--ignore-certificate-errors',
+            '--disable-dev-tools',
+            '--no-zygote',
+            '--v=99',
+            '--single-process'
+        ]
+        for option in options_list:
+            self.chrome_options.add_argument(f'{option}')
+
     def connect_cookies(self) -> None:
         '''Connects to Dotabuff and accepts cookies'''
         self.driver.get(self.url)
-        sleep(2)
-        try:
-            accept_cookies_button = self.driver.find_element(
-            by=By.XPATH,
-            value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
-            accept_cookies_button.click()
-        except:
-            self.click_button()
+        sleep(10)
+        accept_cookies_button = self.driver.find_element(
+        by=By.XPATH,
+        value='//button[descendant::*[text()[contains(.,"Consent")]]]'
+        )
+        ActionChains(self.driver).click(accept_cookies_button).perform()
         sleep(1)
-
-    def click_button(self):
-        try:
-            accept_cookies_button = self.driver.find_element(
-            by=By.XPATH,
-            value="//html/body/div[4]/div[2]/div[1]/div[2]/div[2]/button[1]")
-            accept_cookies_button.click()
-            return
-        except:
-            self.click_button()
-        
 
     def get_heroes(self) -> None:
         '''Gets the list of heroes from www.dotabuff.com\heroes, and saves the urls to these pages in self.get_heroes'''
@@ -138,12 +136,12 @@ class dotaScraper:
 
     def stash_data_local(self, data) -> None:
         hero_name = data[0]
-        if isdir(join(f'raw_data\\{hero_name}')):
+        if isdir(join(f'raw_data/{hero_name}')):
             pass
         else:
-            mkdir(join(f'raw_data\\{hero_name}'))
+            mkdir(join(f'raw_data/{hero_name}'))
         hero_json = dumps(data[1])
-        with open(f'raw_data\\{hero_name}\\{data[0]}-{data[2]}.json', 'w') as file:
+        with open(f'raw_data/{hero_name}/{data[0]}-{data[2]}.json', 'w') as file:
             file.write(hero_json) 
 
     def stash_data_s3(self, data) -> None:

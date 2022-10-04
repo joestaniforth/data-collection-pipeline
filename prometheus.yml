@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    monitor: 'scraper-monitor'
+scrape_configs:
+  job_name: 'prometheus'
+  scrape_interval: 5s
+  static_configs:
+   targets: ['localhost:9090', '44.202.4.154:9090']

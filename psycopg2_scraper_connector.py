@@ -177,9 +177,9 @@ class PostgreSQL_Connector:
 
     def push_data_from_local(self):
         for folder in os.listdir('raw_data'):
-            for file in os.listdir(f'raw_data\\{folder}'):
-                if file.endswith(f'{datetime.today().strftime("%Y-%m-%d")}.json'):
-                    self.push_data(hero_json = f'raw_data\\{folder}\\{file}')
+            for file in os.listdir(f'raw_data/{folder}'):
+                if file.endswith('.json'):
+                    self.push_data(hero_json = f'raw_data/{folder}/{file}')
 
 
 

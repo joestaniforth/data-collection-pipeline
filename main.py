@@ -1,4 +1,4 @@
-from os import rmdir
+from shutil import rmtree
 from scraper import dotaScraper
 from psycopg2_scraper_connector import PostgreSQL_Connector
 from psycopg2_fetcher import PostgreSQL_Fetcher
@@ -20,4 +20,4 @@ def local_scrape():
 
 if __name__ == '__main__':
     local_scrape()
-    rmdir('raw_data')
+    rmtree('raw_data', ignore_errors = True)

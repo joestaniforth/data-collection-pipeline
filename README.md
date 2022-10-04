@@ -103,3 +103,24 @@ Unit testing was initially a challenge; none of the functions have any return va
 
 Patching the methods to be mock tested then allowed the number of calls to be tracked.
 
+## Milestone 6: Scalably store the Data
+
+PoatgreSQL was used on a free-tier microRDS AWS database. Psycopg2 was the connector of choice used for communication between the scraper and the Database. Initially, the intention was to scrape all data to the S3 bucket and pull the data into the SQL database from the bucket. The advantage to this approach was that the need local storage space was reduced, as the data could be stored in memory rather than on disk, through the below approach:
+```python
+ def stash_data_s3(self, data) -> None:
+        file_obj = io.BytesIO(dumps(data[1]).encode('utf-8'))
+        if f'{data[0]}/' not in self.s3_client.list_objects(Bucket = 'jsscraperbucket'):
+            self.s3_client.put_object(Bucket = 'jsscraperbucket', Key = f'{data[0]}/', Body = b'')
+        response = self.s3_client.upload_fileobj(file_obj, 'jsscraperbucket', f'{data[0]}/{data[0]}-{data[2]}_raw_data.json')
+        return response
+```
+However, the storage taken up by the raw data was minimal, and as such, local storage is sufficient for these needs. The S3 bucket is still in use for image hosting, but data does not need to be stored there as this is not sustainable as it will incur costs.
+
+## Milestone 7: Preventing Re-Scraping and Getting more data
+
+As essentially the same data is eing scraped each time the scraper runs, preventing re-scraping was more difficult than simply assigning and ID and looking this ID up. Eventually, it was decided that an ID of the hero name and the date of the week beginning would be concatenated to create an ID. A postgres query, shown below is run through psycopg2 to determine if a record exists, and in main.py, this is evaluated and if no record is found, the hero is scraped.
+```SQL
+SELECT COUNT(*) FROM all_hero_data
+WHERE scraper_id = <target_id>
+```
+This returns a count, which means it will scale better as the database grows in size.
