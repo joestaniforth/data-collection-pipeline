@@ -153,6 +153,8 @@ An EC2 Instance running amazon linux 2 as the AMI was created, and docker was in
 ```shell
 0 12 * * 1 (cd /home/ec2-user; docker-compose up && docker-compose down) >/home/ec2-user/container.log 2>&1
 ```
+The idea of running the scraper on a Lambda or FarGate was considered, as they have better schedulers for starting and stopping the instance, not just running commands. The idea is that this would potentially reduce costs, as keeping an ec2 instance on full time can incur costs, especially out of the free tier usage limits, however, the free tier offerings were insufficient for this to be taken any further.
 
-## Milestone 8: Monitoring and Alerting
+## Milestone 9: Monitoring and Alerting
 
+The prometheus docker image was pulled to the EC2 instance. The prometheus 
