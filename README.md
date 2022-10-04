@@ -153,3 +153,6 @@ An EC2 Instance running amazon linux 2 as the AMI was created, and docker was in
 ```shell
 0 12 * * 1 (cd /home/ec2-user; docker-compose up && docker-compose down) >/home/ec2-user/container.log 2>&1
 ```
+
+## Milestone 8: Monitoring and Alerting
+
