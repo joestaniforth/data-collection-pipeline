@@ -157,4 +157,11 @@ The idea of running the scraper on a Lambda or FarGate was considered, as they h
 
 ## Milestone 9: Monitoring and Alerting
 
-The prometheus docker image was pulled to the EC2 instance. The prometheus 
+The prometheus docker image was pulled to the EC2 instance. The prometheus.yml was configured to expose the ports on local host and the public IPv4 address to allow for metric monitoring. The prometheus command is incredibly complex with many arguments and switches (see below), so a prometheus-docker-compose.yml was written to streamline running the container.
+
+```shell
+sudo docker run --rm -p 9090:9090 --name prometheus -v /home/ec2-user/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus --config-file=/etc/prometheus/prometheus.yml --web.enable-lifecycle
+```
+Grafana was then installed on a local machine, and was pointed at the public IPv4 address on port 9090 to monitor both the docker container and the ec2 instance as a whole. Most of the metrics on the dashboard were decided through trial and error and extensive research as to what they represent; they are not all intuitively named.
+
+![Grafana Dashboard](https://github.com/joestaniforth/DataCollection/blob/docker/grafana%20screenshot.png)
