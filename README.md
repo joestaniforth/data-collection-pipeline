@@ -165,3 +165,7 @@ sudo docker run --rm -p 9090:9090 --name prometheus -v /home/ec2-user/prometheus
 Grafana was then installed on a local machine, and was pointed at the public IPv4 address on port 9090 to monitor both the docker container and the ec2 instance as a whole. Most of the metrics on the dashboard were decided through trial and error and extensive research as to what they represent; they are not all intuitively named.
 
 ![Grafana Dashboard](https://github.com/joestaniforth/DataCollection/blob/docker/grafana%20screenshot.png)
+
+## Milestone 10: Set up a CI/CD pipeline for your docker image
+
+The docker docs contain the process for integration between a github repo and a dockerhub image, so the necessary github secrets were set up. main.yml in .github/workflows was then configured to allow
