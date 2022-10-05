@@ -168,4 +168,4 @@ Grafana was then installed on a local machine, and was pointed at the public IPv
 
 ## Milestone 10: Set up a CI/CD pipeline for your docker image
 
-The docker docs contain the process for integration between a github repo and a dockerhub image, so the necessary github secrets were set up. main.yml in .github/workflows was then configured to allow
+The docker docs contain the process for integration between a github repo and a dockerhub image, so the necessary github secrets were set up. main.yml in .github/workflows was then configured to build the image, login to dockerhub and push the image with the latest tag.
